@@ -47,7 +47,6 @@ function getPersonInChargeOfGarbageDisposal(): person_info[] {
   valueList.shift();
   console.log(valueList)
 
-  // TODO: まとめる
   const aryMin = (a: number, b: number) => Math.min(a, b);
   let minValue = valueList.reduce(aryMin);
   if (isNaN(minValue)) {
@@ -58,7 +57,6 @@ function getPersonInChargeOfGarbageDisposal(): person_info[] {
   const person_data: person_info[] = [];
   while (person_data.length < NUM_OF_PIC) {
     values.map((item, index) => {
-      // TODO: 6列目の列が1の場合のみ取得するようにする
       console.log(item);
       //const index: number = item[0];
       //const grade: string = item[1];
@@ -93,8 +91,8 @@ export function picNotify() {
 
   // 通知をスケジュールするための情報を取得 ex) 月曜日と木曜日の10:00
   const weekDates = getAllWeekDates();
-  const scheduleHour = 5
-  const scheduleMinute = 30
+  const scheduleHour = 10
+  const scheduleMinute = 0
 
   const notifyStr = createNotifyStr(person_data);
   // NOTE: 月曜日と木曜日に通知する
