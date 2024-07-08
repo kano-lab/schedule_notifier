@@ -98,9 +98,8 @@ export function picNotify() {
   // NOTE: 月曜日と木曜日に通知する
   // ms単位を切り落としたものをUNIX時間に変換する
   const scheduleDates = [
-    //Math.floor(weekDates.monday.setHours(scheduleHour, scheduleMinute) / 1000),
-    //Math.floor(weekDates.thursday.setHours(scheduleHour, scheduleMinute) / 1000),
-    Math.floor(weekDates.wednesday.setHours(scheduleHour, scheduleMinute) / 1000),
+    Math.floor(weekDates.monday.setHours(scheduleHour, scheduleMinute) / 1000),
+    Math.floor(weekDates.thursday.setHours(scheduleHour, scheduleMinute) / 1000),
   ];
   scheduleDates.map((date) => {
     slack_notifier.scheduleMessage(notifyStr, PIC_NOTIFY_CHANNEL_ID, date, result.ts);
