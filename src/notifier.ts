@@ -7,8 +7,6 @@ export function mail_notify(
 ) {
   console.log(`send mail to ${address}`);
   // メール送信
-  // TODO: kanolabドメインに対する送信を可能にする
-  // TODO: 結果を取得できないか？
   GmailApp.sendEmail(address, subject, bodyForMail);
 }
 

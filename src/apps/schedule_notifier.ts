@@ -102,7 +102,7 @@ ${eventsStr}
 よろしくお願いいたします。
 
 kanolab スケジュール配信Bot
-kanolab.schedule.bot@gmail.com
+kanolab.share@gmail.com
 `;
 
   // DEBUG
