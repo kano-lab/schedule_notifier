@@ -1,4 +1,4 @@
 export type person_info = {
-  name: string;
-  slack_id: string;
+	name: string;
+	slack_id: string;
 };
