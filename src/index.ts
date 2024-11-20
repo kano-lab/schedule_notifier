@@ -1,11 +1,15 @@
-// Description: This file is the entry point of the application.
-import { scheduleNotify } from "@/apps/schedule_notifier";
-import { picNotify } from "@/apps/pic_of_garbage_disposal_notifier";
+import { scheduleNotify } from "@/apps/schedule_notifier.js";
+import { picNotify } from "@/apps/pic_of_garbage_disposal_notifier.js";
+import { getAuth, getGoogleCalendar, getGoogleSpreadsheet } from "@/auth.js";
+import { config } from "dotenv";
 
-export function _scheduleNotifyHandler() {
-  scheduleNotify();
+function main() {
+	config();
+	const auth = getAuth();
+	const calendar = getGoogleCalendar(auth);
+	const spreadsheet = getGoogleSpreadsheet(auth);
+	scheduleNotify(calendar);
+	picNotify(spreadsheet);
 }
 
-export function _garbageDisposalNotifyHandler() {
-  picNotify();
-}
+main();

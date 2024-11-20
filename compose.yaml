@@ -2,7 +2,7 @@ services:
   bun:
     build:
       context: ./
-      dockerfile: ./Dockerfile.local
+      dockerfile: ./docker/Dockerfile.local
     volumes:
       - ./:/app
     tty: true

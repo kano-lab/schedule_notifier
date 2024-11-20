@@ -1,30 +1,29 @@
 {
-  "compilerOptions": {
-    // Enable latest features
-    "lib": ["ESNext", "DOM"],
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM"],
+		"target": "ESNext",
+		"module": "NodeNext",
+		"moduleDetection": "force",
+		"allowJs": true,
 
-    // Bundler mode
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": false,
+		// モジュール解決の設定を修正
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
 
-    // Best practices
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
+		"noEmit": false,
+		"strict": true,
+		"skipLibCheck": true,
+		"noFallthroughCasesInSwitch": true,
 
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
+		// パス解決の設定
+		"baseUrl": ".",
+		"rootDir": "src",
+		"outDir": "dist",
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
 }
