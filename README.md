@@ -4,70 +4,64 @@
 狩野研究室のスケジュールをGoogleカレンダーから取得し、指定した時間にSlackとメール通知を行うBotです。
 また、研究室のゴミ出し担当者を自動で決定し、通知する機能もあります。
 
+### 📅 機能・運用方法
+
+機能としては以下の通りです。
+- 研究室のスケジュールをGoogleカレンダーから取得し、即時Slackとメール通知を行う
+- その週のゴミ出し担当者を自動で決定し、即時Slack通知する
+- その週のゴミ出し担当者に対して、月曜と木曜にSlack通知を行うような予約投稿を作成する
+
+スクリプトが実行された際に上記処理が行われるため、運用としてはCron等で定期的にスクリプトを実行することを想定しています。
+スケジュール通知の都合上、毎週日曜日の朝にスクリプトを実行することを推奨します。
+
 ### 📦 使用技術
+- Docker
 - TypeScript
-- Google Apps Script
 - Google Calendar API
 - Google Sheets API
-- Gmail API
 - Slack API
 
 
-### 📝 デプロイ
-デプロイ後、WEB上のGASエディタ上で以下のコードを追加し、GAS上で実行可能関数を作成してください。
-``` JavaScript
-function main() {
-  _entry._scheduleNotifyHandler();
-  _entry._garbageDisposalNotifyHandler();
-}
+### 📝 ビルド
+```bash
+make prod_build
 ```
-その後、GAS上でトリガーが適切に設定されていることを確認してください。
-![](./img/GAS_Trigger_sample.png "GAS上におけるtriggerの設定例") 
-
-
 
 ### 🛠️ 環境構築
 
-1. 依存関係のインストール
+1. 開発環境用のDockerコンテナのビルド
 
 ```bash
+make build
+```
+2. .env及びcredentials.jsonの設定
+[ここ](https://drive.google.com/drive/folders/1A-HEyTCv6MhA7DP1qwHNGEIbnKRW8B7z?usp=sharing)から各種ファイルをDLし、ルートディレクトリに配置してください。
+
+3. Dockerコンテナの起動及び依存関係の解決
+```bash
+make up
+make shell
 bun install
 ```
-or 
-```bash
-yarn install
-```
-or 
-```bash
-npm install
-```
-2. `const.ts` ファイルの作成
+`bun install`はdockerコンテナ内で実行してください。
 
-example.const.tsをコピーして、const.tsを作成してください。
-
-3. claspのログイン
+4. スクリプトの実行
 ```bash
-clasp login
-```
-kanolabの共用Googleアカウントでログインしてください。
-
-<hr/>
-To compile TypeScript files:
-
-```bash
-bun run build 
+make exec
 ```
 
-To compile and push to Google Apps Script:
-
+5. Dockerコンテナの停止
 ```bash
-bun run deploy 
+make down
 ```
 
-This project was created using `bun init` in bun v1.1.12. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+### format・lint
+```bash
+make format
+make lint
+```
 
-
-### 📝 created by
+### 📝 作成
 馬場 海好  
 mbaba@kanolab.net  
 運用開始: 2024/7-
