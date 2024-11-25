@@ -27,6 +27,12 @@
 make prod_build
 ```
 
+実行用スクリプト(下記をcron等で定期実行)
+```bash
+docker run --env-file [env-file-path] notifier node dist/index.js
+```
+
+
 ### 🛠️ 環境構築
 
 1. 開発環境用のDockerコンテナのビルド
