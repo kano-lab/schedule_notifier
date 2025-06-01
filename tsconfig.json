@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"lib": ["ESNext", "DOM"],
+		"types": ["web", "bun-types"],
 		"target": "ESNext",
 		"module": "NodeNext",
 		"moduleDetection": "force",

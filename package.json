@@ -13,6 +13,7 @@
 		"@types/google-apps-script": "^1.0.83",
 		"@types/node": "^22.9.1",
 		"@types/nodemailer": "^6.4.17",
+		"@types/web": "^0.0.237",
 		"clasp": "^1.0.0",
 		"fix-esm-import-path": "^1.10.1",
 		"globals": "^15.6.0",
