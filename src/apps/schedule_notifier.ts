@@ -20,7 +20,7 @@ async function getEventForCalender(calendar: calendar_v3.Calendar) {
 }
 
 // NOTE: 各イベントのテキストをCalendarEventから作成
-function createEventStr(e: calendar_v3.Schema$Event) {
+export function createEventStr(e: calendar_v3.Schema$Event) {
 	// 予定のタイトルを取得
 	const title = e.summary;
 
@@ -42,7 +42,7 @@ function createEventStr(e: calendar_v3.Schema$Event) {
 	return `${eventStr}\n「${title}」`;
 }
 
-function createAllDayEventStr(e: calendar_v3.Schema$Event) {
+export function createAllDayEventStr(e: calendar_v3.Schema$Event) {
 	// 予定の開始日・終了日を取得
 	const startDate = new Date(e.start?.date as string);
 	const endDate = new Date(e.end?.date as string);
@@ -57,7 +57,7 @@ function createAllDayEventStr(e: calendar_v3.Schema$Event) {
 	return `${startDate.getMonth() + 1}/${startDate.getDate()}`;
 }
 
-function createTimeEventStr(e: calendar_v3.Schema$Event) {
+export function createTimeEventStr(e: calendar_v3.Schema$Event) {
 	// 予定の開始時刻・終了時刻を取得
 	const startDate = new Date(e.start?.dateTime as string);
 	const endDate = new Date(e.end?.dateTime as string);
@@ -78,7 +78,7 @@ function createTimeEventStr(e: calendar_v3.Schema$Event) {
 	return `${startDate.getMonth() + 1}/${startDate.getDate()} ${startHour}:${startMinute} - ${endHour}:${endMinute}`;
 }
 
-function createNotifySubject() {
+export function createNotifySubject() {
 	const endDate = new Date();
 	endDate.setDate(endDate.getDate() + 7);
 
@@ -89,7 +89,7 @@ function createNotifySubject() {
 	return subject;
 }
 
-function createNotifyBody(events: calendar_v3.Schema$Event[]) {
+export function createNotifyBody(events: calendar_v3.Schema$Event[]) {
 	const endDate = new Date();
 	endDate.setDate(endDate.getDate() + 7);
 

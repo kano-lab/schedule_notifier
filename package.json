@@ -4,7 +4,8 @@
 	"scripts": {
 		"dev": "tsx src/index.ts",
 		"start": "node dist/index.js",
-		"build": "tsc && tsc-alias && fix-esm-import-path dist/"
+		"build": "tsc && tsc-alias && fix-esm-import-path dist/",
+		"test": "TZ=Asia/Tokyo bun test"
 	},
 	"type": "module",
 	"devDependencies": {

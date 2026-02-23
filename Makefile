@@ -19,6 +19,9 @@ shell:
 exec:
 	docker compose exec bun bun run src/index.ts
 
+test:
+	TZ=Asia/Tokyo bun test
+
 prod_build:
 	docker build -t notifier -f docker/Dockerfile .
 
