@@ -55,6 +55,39 @@ make exec
 make down
 ```
 
+### 🕐 定期実行（Cron）
+
+毎週日曜日の朝にスクリプトを実行することを推奨します。
+
+まず、プロダクションビルドを行うと `notifier` という名前のDockerイメージが作成されます。
+```bash
+make prod_build
+# 内部的には docker build -t notifier -f docker/Dockerfile . が実行される
+```
+
+このイメージはBunでビルドされたJSバンドルをNode.js上で実行する軽量な実行用イメージです。
+`docker run` で起動すると通知処理を一度実行して終了するため、Cron等と組み合わせて定期実行できます。
+
+以下はcrontabの設定例です。
+```bash
+# 毎週日曜日の午前7時に実行する場合
+0 7 * * 0 docker run --rm --env-file /path/to/.env notifier
+```
+
+#### 実行時の動作
+
+スクリプトが実行されると、以下の処理が順番に行われます。
+
+1. **スケジュール通知**
+   - Google Calendarから実行日を起点に7日分の予定を取得
+   - 取得した予定をメール（Gmail SMTP）とSlackで即時通知
+
+2. **ゴミ捨て当番通知**
+   - Google Sheetsから研究室メンバーの当番回数を参照し、回数が最も少ない人を当番に選出
+   - 選出された当番をSlackで即時通知
+   - 月曜日と木曜日の10:00にリマインドするSlack予約投稿を作成
+   - Google Sheetsの当番回数を自動でインクリメント
+
 ### format・lint
 ```bash
 make format
