@@ -1,112 +1,83 @@
 import type { person_info } from "@/types.js";
 import type { sheets_v4 } from "googleapis";
 import { slack_notifier } from "@/notifier.js";
-import { getYearStr, getAllWeekDates } from "@/utils.js";
+import { getAllWeekDates } from "@/utils.js";
 
-type poc_data = [
-  `${number}`,
-  string,
-  string,
-  string,
-  string,
-  `${boolean}`,
-  `${number}`,
-];
-type poc_data_list = poc_data[];
+const SHEET_NAME = "list";
+const NUM_OF_PIC = 1;
+
+type Member = {
+  grade: string;
+  name: string;
+  slackId: string;
+  canPic: boolean;
+  count: number;
+  rowIndex: number;
+};
+
+// NOTE: スプレッドシートの生データをMember型にマッピングする
+function parseMembers(rows: string[][]): Member[] {
+  return rows.map((row, i) => ({
+    grade: row[0],
+    name: row[1],
+    slackId: row[2],
+    canPic: row[3] === "true",
+    count: Number(row[4]),
+    rowIndex: i + 2, // header込みの行番号
+  }));
+}
 
 // NOTE: 週の初め用の通知メッセージを作成する
-function createAssigneeStr(person_data: person_info[]) {
-  const assigneeStr = person_data
-    .map((d: person_info) => {
-      return `<@${d.slack_id}> さん`;
-    })
-    .join("と");
-  return `今週のゴミ捨て当番は ${assigneeStr} です`;
+function createAssigneeStr(persons: person_info[]) {
+  const mention = persons.map((d) => `<@${d.slack_id}> さん`).join("と");
+  return `今週のゴミ捨て当番は ${mention} です`;
 }
 
 // NOTE: 当日の通知メッセージを作成する
-function createNotifyStr(person_data: person_info[]) {
-  const assigneeStr = person_data
-    .map((d: person_info) => {
-      return `<@${d.slack_id}> さん`;
-    })
-    .join("と");
-  return `${assigneeStr}! ゴミ捨ての時間です!`;
+function createNotifyStr(persons: person_info[]) {
+  const mention = persons.map((d) => `<@${d.slack_id}> さん`).join("と");
+  return `${mention}! ゴミ捨ての時間です!`;
 }
 
 // NOTE: スプレッドシートからその週のゴミ捨て当番を取得する
 async function getPersonInChargeOfGarbageDisposal(
   spreadsheet: sheets_v4.Sheets,
 ): Promise<person_info[]> {
-  const NUM_OF_PIC = 1;
   const SHEET_ID = process.env.SHEET_ID as string;
-  const sheetName = getYearStr();
-  const sheet = await spreadsheet.spreadsheets.get({
-    spreadsheetId: SHEET_ID,
-    ranges: [sheetName],
-    includeGridData: true,
-  });
-  if (!sheet) {
-    throw new Error("シートが見つかりませんでした");
-  }
 
-  // 全てのデータの取得
   const range = await spreadsheet.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: sheetName,
+    range: SHEET_NAME,
   });
-  const values: poc_data_list = range.data.values as poc_data_list;
-  console.log(values);
-  if (!values) {
+  const rows = range.data.values as string[][];
+  if (!rows || rows.length <= 1) {
     throw new Error("データが取得できませんでした");
   }
 
-  // indexを削除
-  values.shift();
+  // ヘッダー行を除いてMember型にマッピング
+  const members = parseMembers(rows.slice(1));
 
-  // 指定したセル範囲を取得する
-  //@ts-ignore
-  const valueList = values.map((item) => {
-    return Number(item[6]);
-  });
+  // 割り当て可能なメンバーを回数昇順でソート
+  const candidates = members
+    .filter((m) => m.canPic)
+    .sort((a, b) => a.count - b.count);
 
-  // 最小値を取得する
-  let minValue = Math.min(...valueList);
-  console.log(minValue);
-  const person_data: person_info[] = [];
-  while (person_data.length < NUM_OF_PIC) {
-    values.map((item: poc_data, index: number) => {
-      console.log(item);
-      //const index: number = item[0];
-      //const grade: string = item[1];
-      const name: string = item[2];
-      //const charge: string = item[3];
-      const slack_id: string = item[4];
-      const canPic = Boolean(item[5]);
-      const count = Number(item[6]);
-      if (count === minValue && person_data.length !== NUM_OF_PIC) {
-        // NOTE: nameからspreadsheetを検索して、countをupdateする
-        spreadsheet.spreadsheets.values.update({
-          spreadsheetId: SHEET_ID,
-          // NOTE: header込みのindexを指定する
-          range: `${sheetName}!G${index + 2}`,
-          valueInputOption: "RAW",
-          requestBody: {
-            values: [[count + 1]],
-          },
-        });
-        // NOTE: ゴミ捨ての割り当てが可能な場合、person_dataに追加する
-        if (canPic) {
-          person_data.push({ name, slack_id });
-        }
-      }
+  // 回数が最小のメンバーから必要人数分を選出
+  const assignees = candidates.slice(0, NUM_OF_PIC);
+
+  // スプレッドシートの回数を更新
+  for (const member of assignees) {
+    await spreadsheet.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range: `${SHEET_NAME}!E${member.rowIndex}`,
+      valueInputOption: "RAW",
+      requestBody: {
+        values: [[member.count + 1]],
+      },
     });
-    minValue += 1;
   }
 
-  // DEBUG
-  console.log(person_data);
-  return person_data;
+  return assignees.map((m) => ({ name: m.name, slack_id: m.slackId }));
 }
 
 // NOTE: ゴミ捨て通知アプリのエントリーポイント

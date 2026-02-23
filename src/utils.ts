@@ -1,15 +1,3 @@
-// 現在の年度を取得する関数
-const getYear = () => {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = now.getMonth();
-	return month >= 3 ? year : year - 1;
-};
-
-export const getYearStr = () => {
-	return getYear().toString();
-};
-
 type DayOfWeek =
 	| "monday"
 	| "tuesday"
