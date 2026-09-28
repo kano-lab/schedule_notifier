@@ -1,8 +1,20 @@
-import { describe, expect, test } from "bun:test";
+import {
+	afterEach,
+	beforeEach,
+	describe,
+	expect,
+	mock,
+	setSystemTime,
+	spyOn,
+	test,
+} from "bun:test";
+import type { sheets_v4 } from "googleapis";
+import { slack_notifier } from "@/notifier.js";
 import {
 	createAssigneeStr,
 	createNotifyStr,
 	parseMembers,
+	picNotify,
 } from "./pic_of_garbage_disposal_notifier.js";
 
 describe("parseMembers", () => {
@@ -93,5 +105,62 @@ describe("createNotifyStr", () => {
 		expect(result).toBe(
 			"<@U12345> さんと<@U67890> さん! ゴミ捨ての時間です!",
 		);
+	});
+});
+
+describe("picNotify", () => {
+	const assigneeMessageTs = "1790000000.000100";
+	const spreadsheet = {
+		spreadsheets: {
+			values: {
+				get: async () => ({
+					data: {
+						values: [
+							["学年", "名前", "SlackID", "当番可否", "回数"],
+							["M2", "田中", "U12345", "true", "3"],
+						],
+					},
+				}),
+				update: async () => ({}),
+			},
+		},
+	} as unknown as sheets_v4.Sheets;
+
+	beforeEach(() => {
+		process.env.SHEET_ID = "test-sheet";
+		process.env.PIC_NOTIFY_CHANNEL_ID = "C_TEST";
+		// 日曜 07:00 に実行した想定。月曜・木曜の 10:00 がどちらも未来になる
+		setSystemTime(new Date("2026-09-27T07:00:00+09:00"));
+		spyOn(slack_notifier, "message").mockResolvedValue({
+			ok: true,
+			ts: assigneeMessageTs,
+		});
+	});
+
+	afterEach(() => {
+		mock.restore();
+		setSystemTime();
+	});
+
+	test("予約投稿が当番通知のスレッドに付く", async () => {
+		const scheduleMessage = spyOn(
+			slack_notifier,
+			"scheduleMessage",
+		).mockResolvedValue({ ok: true });
+
+		await picNotify(spreadsheet);
+
+		expect(scheduleMessage).toHaveBeenCalledTimes(2);
+		for (const call of scheduleMessage.mock.calls) {
+			expect(call[3]).toBe(assigneeMessageTs);
+		}
+	});
+
+	test("予約投稿に失敗した場合はエラーになる", async () => {
+		spyOn(slack_notifier, "scheduleMessage").mockRejectedValue(
+			new Error("Failed to send slack message: invalid_time"),
+		);
+
+		await expect(picNotify(spreadsheet)).rejects.toThrow("invalid_time");
 	});
 });

@@ -146,9 +146,12 @@ export async function scheduleNotify(calendar: calendar_v3.Calendar) {
 	console.log(body);
 
 	const ADRESS = process.env.ADRESS as string;
-	mail_notify(ADRESS, subject, body);
+	const mailResult = mail_notify(ADRESS, subject, body);
 
 	// slackへの通知
 	const CHANNEL_ID = process.env.EVENT_NOTIFY_CHANNEL_ID as string;
-	slack_notifier.message(body, CHANNEL_ID);
+	const slackResult = slack_notifier.message(body, CHANNEL_ID);
+
+	// NOTE: メールとslackは互いに独立しているため、片方が失敗してももう片方は送信する
+	await Promise.all([mailResult, slackResult]);
 }

@@ -35,10 +35,17 @@ type slackPayload = {
 	channel: string;
 	text: string;
 	post_at?: number;
-	thread_ts?: number;
+	thread_ts?: string;
 };
 
-function slackMessage(message: string, channelId: string, thread_ts?: number) {
+// NOTE: tsはメッセージのID。スレッドへの返信先の指定に使う
+type slackResponse = {
+	ok: boolean;
+	ts?: string;
+	error?: string;
+};
+
+function slackMessage(message: string, channelId: string, thread_ts?: string) {
 	const url = "https://slack.com/api/chat.postMessage";
 	const result = fetchSlackAPI(url, message, channelId, undefined, thread_ts);
 	return result;
@@ -49,7 +56,7 @@ function slackScheduleMessage(
 	message: string,
 	channelId: string,
 	postAt: number,
-	thread_ts?: number,
+	thread_ts?: string,
 ) {
 	const url = "https://slack.com/api/chat.scheduleMessage";
 	const result = fetchSlackAPI(url, message, channelId, postAt, thread_ts);
@@ -61,8 +68,8 @@ async function fetchSlackAPI(
 	message: string,
 	channelId: string,
 	postAt?: number,
-	thread_ts?: number,
-) {
+	thread_ts?: string,
+): Promise<slackResponse> {
 	console.log(`send slack message to ${channelId}`);
 	const token = process.env.SLACK_OAUTH_TOKEN;
 	const payload: slackPayload = {
@@ -79,7 +86,7 @@ async function fetchSlackAPI(
 
 	console.log(JSON.stringify(payload));
 
-	const result = await fetch(url, {
+	const result: slackResponse = await fetch(url, {
 		method: "post",
 		headers: {
 			"Content-Type": "application/json",

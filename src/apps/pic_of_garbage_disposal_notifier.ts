@@ -88,7 +88,10 @@ export async function picNotify(spreadsheet: sheets_v4.Sheets) {
 	console.log(person_data);
 	const assigneeStr = createAssigneeStr(person_data);
 	console.log(assigneeStr);
-	const result = slack_notifier.message(assigneeStr, PIC_NOTIFY_CHANNEL_ID);
+	const result = await slack_notifier.message(
+		assigneeStr,
+		PIC_NOTIFY_CHANNEL_ID,
+	);
 
 	// 通知をスケジュールするための情報を取得 ex) 月曜日と木曜日の10:00
 	const weekDates = getAllWeekDates();
@@ -107,21 +110,22 @@ export async function picNotify(spreadsheet: sheets_v4.Sheets) {
 	];
 
 	const nowUnix = Math.floor(Date.now() / 1000);
-	scheduleDates
-		.filter((date) => {
-			if (date <= nowUnix) {
-				console.log(`スケジュール時刻 ${date} は過去のためスキップします`);
-				return false;
-			}
-			return true;
-		})
-		.map((date) => {
-			slack_notifier.scheduleMessage(
-				notifyStr,
-				PIC_NOTIFY_CHANNEL_ID,
-				date,
-				// @ts-ignore
-				result.ts,
-			);
-		});
+	await Promise.all(
+		scheduleDates
+			.filter((date) => {
+				if (date <= nowUnix) {
+					console.log(`スケジュール時刻 ${date} は過去のためスキップします`);
+					return false;
+				}
+				return true;
+			})
+			.map((date) =>
+				slack_notifier.scheduleMessage(
+					notifyStr,
+					PIC_NOTIFY_CHANNEL_ID,
+					date,
+					result.ts,
+				),
+			),
+	);
 }
